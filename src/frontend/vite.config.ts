@@ -12,6 +12,11 @@ export default defineConfig({
         target: process.env.WEATHER_HTTPS || process.env.WEATHER_HTTP,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/weather/, '')
+      },
+      '/weather-ai-outfit/api': {
+        target: process.env.WEATHER_AI_OUTFIT_HTTPS || process.env.WEATHER_AI_OUTFIT_HTTP,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/weather-ai-outfit/, '')
       }
     }
   }

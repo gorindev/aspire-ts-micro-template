@@ -15,6 +15,43 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [useCelsius, setUseCelsius] = useState(true);
 
+  const [outfitSuggestion, setOutfitSuggestion] = useState<string | null>(null);
+  const [loadingOutfit, setLoadingOutfit] = useState(false);
+  const [outfitError, setOutfitError] = useState<string | null>(null);
+
+  const fetchOutfitSuggestion = async () => {
+    if (weatherData.length === 0) return;
+
+    setLoadingOutfit(true);
+    setOutfitError(null);
+
+    const todayWeather = weatherData[0];
+    const weatherString = `${todayWeather.summary}, ${todayWeather.temperatureC}°C (${todayWeather.temperatureF}°F)`;
+
+    try {
+      const response = await fetch('/weather-ai-outfit/api/suggest-outfit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ weather: weatherString }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const suggestion = await response.text();
+      setOutfitSuggestion(suggestion);
+    } catch (err) {
+      setOutfitError(err instanceof Error ? err.message : 'Failed to fetch outfit suggestion');
+      console.error('Error fetching outfit suggestion:', err);
+    } finally {
+      setLoadingOutfit(false);
+    }
+  };
+
+
   const fetchWeatherForecast = async () => {
     setLoading(true);
     setError(null);
@@ -156,6 +193,64 @@ function App() {
                 ))}
               </div>
             )}
+          </div>
+        </section>
+        <section className="weather-section" aria-labelledby="weather-ai-outfit-heading">
+          <div className="card">
+            <div className="section-header">
+              <h2 id="weather-ai-outfit-heading" className="section-title">Outfit Suggestion</h2>
+              <div className="header-actions">
+                <button
+                  className="refresh-button"
+                  onClick={fetchOutfitSuggestion}
+                  disabled={loadingOutfit || weatherData.length === 0}
+                  type="button"
+                >
+                  <svg
+                    className={`refresh-icon ${loadingOutfit ? 'spinning' : ''}`}
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+                  </svg>
+                  <span>{loadingOutfit ? 'Loading...' : 'Suggest outfit'}</span>
+                </button>
+              </div>
+            </div>
+
+            {outfitError && (
+              <div className="error-message" role="alert" aria-live="polite">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>{outfitError}</span>
+              </div>
+            )}
+
+            <div className="section-content">
+              {loadingOutfit ? (
+                <div className="loading-skeleton" role="status" aria-live="polite">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="skeleton-row" aria-hidden="true" />
+                  ))}
+                  <span className="visually-hidden">Loading outfit suggestion...</span>
+                </div>
+              ) : outfitSuggestion ? (
+                <div className="outfit-suggestion-content">
+                  <p>{outfitSuggestion}</p>
+                </div>
+              ) : (
+                <p>Click "Suggest outfit" to get a recommendation based on today's weather forecast.</p>
+              )}
+            </div>
           </div>
         </section>
       </main>

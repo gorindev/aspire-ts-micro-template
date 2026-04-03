@@ -28,6 +28,9 @@ import {
 // Handle Type Aliases (Internal - not exported to users)
 // ============================================================================
 
+/** Handle to GitHubModelResource */
+type GitHubModelResourceHandle = Handle<'Aspire.Hosting.GitHub.Models/Aspire.Hosting.GitHub.Models.GitHubModelResource'>;
+
 /** Handle to JavaScriptAppResource */
 type JavaScriptAppResourceHandle = Handle<'Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.JavaScriptAppResource'>;
 
@@ -309,6 +312,53 @@ export enum ForwardedTransformActions {
     Set = "Set",
     Append = "Append",
     Remove = "Remove",
+}
+
+/** Enum type for GitHubModelName */
+export enum GitHubModelName {
+    AI21Jamba15Large = "AI21Jamba15Large",
+    CohereCommandA = "CohereCommandA",
+    CohereCommandR082024 = "CohereCommandR082024",
+    CohereCommandRPlus082024 = "CohereCommandRPlus082024",
+    DeepSeekR1 = "DeepSeekR1",
+    DeepSeekR10528 = "DeepSeekR10528",
+    DeepSeekV30324 = "DeepSeekV30324",
+    Llama4Maverick17B128EInstructFP8 = "Llama4Maverick17B128EInstructFP8",
+    Llama4Scout17B16EInstruct = "Llama4Scout17B16EInstruct",
+    Llama3211BVisionInstruct = "Llama3211BVisionInstruct",
+    Llama3290BVisionInstruct = "Llama3290BVisionInstruct",
+    Llama3370BInstruct = "Llama3370BInstruct",
+    MetaLlama31405BInstruct = "MetaLlama31405BInstruct",
+    MetaLlama318BInstruct = "MetaLlama318BInstruct",
+    MaiDSR1 = "MaiDSR1",
+    Phi4 = "Phi4",
+    Phi4MiniInstruct = "Phi4MiniInstruct",
+    Phi4MiniReasoning = "Phi4MiniReasoning",
+    Phi4MultimodalInstruct = "Phi4MultimodalInstruct",
+    Phi4Reasoning = "Phi4Reasoning",
+    Codestral2501 = "Codestral2501",
+    Ministral3B = "Ministral3B",
+    MistralMedium32505 = "MistralMedium32505",
+    MistralSmall31 = "MistralSmall31",
+    OpenAIGpt41 = "OpenAIGpt41",
+    OpenAIGpt41Mini = "OpenAIGpt41Mini",
+    OpenAIGpt41Nano = "OpenAIGpt41Nano",
+    OpenAIGpt4o = "OpenAIGpt4o",
+    OpenAIGpt4oMini = "OpenAIGpt4oMini",
+    OpenAIGpt5 = "OpenAIGpt5",
+    OpenAIGpt5ChatPreview = "OpenAIGpt5ChatPreview",
+    OpenAIGpt5Mini = "OpenAIGpt5Mini",
+    OpenAIGpt5Nano = "OpenAIGpt5Nano",
+    OpenAIO1 = "OpenAIO1",
+    OpenAIO1Mini = "OpenAIO1Mini",
+    OpenAIO1Preview = "OpenAIO1Preview",
+    OpenAIO3 = "OpenAIO3",
+    OpenAIO3Mini = "OpenAIO3Mini",
+    OpenAIO4Mini = "OpenAIO4Mini",
+    OpenAITextEmbedding3Large = "OpenAITextEmbedding3Large",
+    OpenAITextEmbedding3Small = "OpenAITextEmbedding3Small",
+    Grok3 = "Grok3",
+    Grok3Mini = "Grok3Mini",
 }
 
 /** Enum type for HeaderMatchMode */
@@ -636,6 +686,14 @@ export interface AddContainerRegistryOptions {
 export interface AddDockerfileOptions {
     dockerfilePath?: string;
     stage?: string;
+}
+
+export interface AddGitHubModelByIdOptions {
+    organization?: ParameterResource;
+}
+
+export interface AddGitHubModelOptions {
+    organization?: ParameterResource;
 }
 
 export interface AddJavaScriptAppOptions {
@@ -4706,6 +4764,40 @@ export class DistributedApplicationBuilder {
         return new YarpResourcePromise(this._addYarpInternal(name));
     }
 
+    /** Adds a GitHub Model resource to the distributed application model. */
+    /** @internal */
+    async _addGitHubModelInternal(name: string, model: GitHubModelName, organization?: ParameterResource): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, model };
+        if (organization !== undefined) rpcArgs.organization = organization;
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting.GitHub.Models/addGitHubModel',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    addGitHubModel(name: string, model: GitHubModelName, options?: AddGitHubModelOptions): GitHubModelResourcePromise {
+        const organization = options?.organization;
+        return new GitHubModelResourcePromise(this._addGitHubModelInternal(name, model, organization));
+    }
+
+    /** Adds a GitHub Model resource using a model identifier string. */
+    /** @internal */
+    async _addGitHubModelByIdInternal(name: string, modelId: string, organization?: ParameterResource): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, modelId };
+        if (organization !== undefined) rpcArgs.organization = organization;
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting.GitHub.Models/addGitHubModelById',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    addGitHubModelById(name: string, modelId: string, options?: AddGitHubModelByIdOptions): GitHubModelResourcePromise {
+        const organization = options?.organization;
+        return new GitHubModelResourcePromise(this._addGitHubModelByIdInternal(name, modelId, organization));
+    }
+
 }
 
 /**
@@ -4894,6 +4986,16 @@ export class DistributedApplicationBuilderPromise implements PromiseLike<Distrib
     /** Adds a YARP container to the application model. */
     addYarp(name: string): YarpResourcePromise {
         return new YarpResourcePromise(this._promise.then(obj => obj.addYarp(name)));
+    }
+
+    /** Adds a GitHub Model resource to the distributed application model. */
+    addGitHubModel(name: string, model: GitHubModelName, options?: AddGitHubModelOptions): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.addGitHubModel(name, model, options)));
+    }
+
+    /** Adds a GitHub Model resource using a model identifier string. */
+    addGitHubModelById(name: string, modelId: string, options?: AddGitHubModelByIdOptions): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.addGitHubModelById(name, modelId, options)));
     }
 
 }
@@ -14524,6 +14626,723 @@ export class ExternalServiceResourcePromise implements PromiseLike<ExternalServi
     /** Subscribes to the ResourceReady event */
     onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): ExternalServiceResourcePromise {
         return new ExternalServiceResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
+}
+
+// ============================================================================
+// GitHubModelResource
+// ============================================================================
+
+export class GitHubModelResource extends ResourceBuilderBase<GitHubModelResourceHandle> {
+    constructor(handle: GitHubModelResourceHandle, client: AspireClientRpc) {
+        super(handle, client);
+    }
+
+    /** @internal */
+    private async _withContainerRegistryInternal(registry: ResourceBuilderBase): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, registry };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withContainerRegistry',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Configures a resource to use a container registry */
+    withContainerRegistry(registry: ResourceBuilderBase): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withContainerRegistryInternal(registry));
+    }
+
+    /** @internal */
+    private async _withDockerfileBaseImageInternal(buildImage?: string, runtimeImage?: string): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (buildImage !== undefined) rpcArgs.buildImage = buildImage;
+        if (runtimeImage !== undefined) rpcArgs.runtimeImage = runtimeImage;
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withDockerfileBaseImage',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Sets the base image for a Dockerfile build */
+    withDockerfileBaseImage(options?: WithDockerfileBaseImageOptions): GitHubModelResourcePromise {
+        const buildImage = options?.buildImage;
+        const runtimeImage = options?.runtimeImage;
+        return new GitHubModelResourcePromise(this._withDockerfileBaseImageInternal(buildImage, runtimeImage));
+    }
+
+    /** @internal */
+    private async _withRequiredCommandInternal(command: string, helpLink?: string): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, command };
+        if (helpLink !== undefined) rpcArgs.helpLink = helpLink;
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withRequiredCommand',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Adds a required command dependency */
+    withRequiredCommand(command: string, options?: WithRequiredCommandOptions): GitHubModelResourcePromise {
+        const helpLink = options?.helpLink;
+        return new GitHubModelResourcePromise(this._withRequiredCommandInternal(command, helpLink));
+    }
+
+    /** @internal */
+    private async _withConnectionPropertyInternal(name: string, value: string | ReferenceExpression): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withConnectionProperty',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Adds a connection property with a string or reference expression value */
+    withConnectionProperty(name: string, value: string | ReferenceExpression): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withConnectionPropertyInternal(name, value));
+    }
+
+    /** @internal */
+    private async _withConnectionPropertyValueInternal(name: string, value: string): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withConnectionPropertyValue',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Adds a connection property with a string value */
+    withConnectionPropertyValue(name: string, value: string): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withConnectionPropertyValueInternal(name, value));
+    }
+
+    /** Gets a connection property by key */
+    async getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle, key };
+        return await this._client.invokeCapability<ReferenceExpression>(
+            'Aspire.Hosting/getConnectionProperty',
+            rpcArgs
+        );
+    }
+
+    /** @internal */
+    private async _withUrlsCallbackInternal(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as ResourceUrlsCallbackContextHandle;
+            const obj = new ResourceUrlsCallbackContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withUrlsCallback',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Customizes displayed URLs via callback */
+    withUrlsCallback(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withUrlsCallbackInternal(callback));
+    }
+
+    /** @internal */
+    private async _withUrlsCallbackAsyncInternal(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceUrlsCallbackContextHandle;
+            const arg = new ResourceUrlsCallbackContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withUrlsCallbackAsync',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Customizes displayed URLs via async callback */
+    withUrlsCallbackAsync(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withUrlsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withUrlInternal(url: string, displayText?: string): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, url };
+        if (displayText !== undefined) rpcArgs.displayText = displayText;
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withUrl',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Adds or modifies displayed URLs */
+    withUrl(url: string, options?: WithUrlOptions): GitHubModelResourcePromise {
+        const displayText = options?.displayText;
+        return new GitHubModelResourcePromise(this._withUrlInternal(url, displayText));
+    }
+
+    /** @internal */
+    private async _withUrlExpressionInternal(url: ReferenceExpression, displayText?: string): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, url };
+        if (displayText !== undefined) rpcArgs.displayText = displayText;
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withUrlExpression',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Adds a URL using a reference expression */
+    withUrlExpression(url: ReferenceExpression, options?: WithUrlExpressionOptions): GitHubModelResourcePromise {
+        const displayText = options?.displayText;
+        return new GitHubModelResourcePromise(this._withUrlExpressionInternal(url, displayText));
+    }
+
+    /** @internal */
+    private async _withUrlForEndpointInternal(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const obj = wrapIfHandle(objData) as ResourceUrlAnnotation;
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, endpointName, callback: callbackId };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withUrlForEndpoint',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Customizes the URL for a specific endpoint via callback */
+    withUrlForEndpoint(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withUrlForEndpointInternal(endpointName, callback));
+    }
+
+    /** @internal */
+    private async _excludeFromManifestInternal(): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/excludeFromManifest',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Excludes the resource from the deployment manifest */
+    excludeFromManifest(): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._excludeFromManifestInternal());
+    }
+
+    /** @internal */
+    private async _withExplicitStartInternal(): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withExplicitStart',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Prevents resource from starting automatically */
+    withExplicitStart(): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withExplicitStartInternal());
+    }
+
+    /** @internal */
+    private async _withHealthCheckInternal(key: string): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, key };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withHealthCheck',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Adds a health check by key */
+    withHealthCheck(key: string): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withHealthCheckInternal(key));
+    }
+
+    /** @internal */
+    private async _withCommandInternal(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, commandOptions?: CommandOptions): Promise<GitHubModelResource> {
+        const executeCommandId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ExecuteCommandContextHandle;
+            const arg = new ExecuteCommandContext(argHandle, this._client);
+            return await executeCommand(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, displayName, executeCommand: executeCommandId };
+        if (commandOptions !== undefined) rpcArgs.commandOptions = commandOptions;
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withCommand',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Adds a resource command */
+    withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): GitHubModelResourcePromise {
+        const commandOptions = options?.commandOptions;
+        return new GitHubModelResourcePromise(this._withCommandInternal(name, displayName, executeCommand, commandOptions));
+    }
+
+    /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
+    private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withBuilderParentRelationship',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Sets the parent relationship */
+    withParentRelationship(parent: ResourceBuilderBase): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withParentRelationshipInternal(parent));
+    }
+
+    /** @internal */
+    private async _withChildRelationshipInternal(child: ResourceBuilderBase): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, child };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withBuilderChildRelationship',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Sets a child relationship */
+    withChildRelationship(child: ResourceBuilderBase): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withChildRelationshipInternal(child));
+    }
+
+    /** @internal */
+    private async _withIconNameInternal(iconName: string, iconVariant?: IconVariant): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, iconName };
+        if (iconVariant !== undefined) rpcArgs.iconVariant = iconVariant;
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withIconName',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Sets the icon for the resource */
+    withIconName(iconName: string, options?: WithIconNameOptions): GitHubModelResourcePromise {
+        const iconVariant = options?.iconVariant;
+        return new GitHubModelResourcePromise(this._withIconNameInternal(iconName, iconVariant));
+    }
+
+    /** @internal */
+    private async _excludeFromMcpInternal(): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/excludeFromMcp',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Excludes the resource from MCP server exposure */
+    excludeFromMcp(): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._excludeFromMcpInternal());
+    }
+
+    /** @internal */
+    private async _withPipelineStepFactoryInternal(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, dependsOn?: string[], requiredBy?: string[], tags?: string[], description?: string): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as PipelineStepContextHandle;
+            const arg = new PipelineStepContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, stepName, callback: callbackId };
+        if (dependsOn !== undefined) rpcArgs.dependsOn = dependsOn;
+        if (requiredBy !== undefined) rpcArgs.requiredBy = requiredBy;
+        if (tags !== undefined) rpcArgs.tags = tags;
+        if (description !== undefined) rpcArgs.description = description;
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withPipelineStepFactory',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Adds a pipeline step to the resource */
+    withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): GitHubModelResourcePromise {
+        const dependsOn = options?.dependsOn;
+        const requiredBy = options?.requiredBy;
+        const tags = options?.tags;
+        const description = options?.description;
+        return new GitHubModelResourcePromise(this._withPipelineStepFactoryInternal(stepName, callback, dependsOn, requiredBy, tags, description));
+    }
+
+    /** @internal */
+    private async _withPipelineConfigurationAsyncInternal(callback: (arg: PipelineConfigurationContext) => Promise<void>): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as PipelineConfigurationContextHandle;
+            const arg = new PipelineConfigurationContext(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withPipelineConfigurationAsync',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Configures pipeline step dependencies via an async callback */
+    withPipelineConfigurationAsync(callback: (arg: PipelineConfigurationContext) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withPipelineConfigurationAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withPipelineConfigurationInternal(callback: (obj: PipelineConfigurationContext) => Promise<void>): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (objData: unknown) => {
+            const objHandle = wrapIfHandle(objData) as PipelineConfigurationContextHandle;
+            const obj = new PipelineConfigurationContext(objHandle, this._client);
+            await callback(obj);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/withPipelineConfiguration',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Configures pipeline step dependencies via a callback */
+    withPipelineConfiguration(callback: (obj: PipelineConfigurationContext) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withPipelineConfigurationInternal(callback));
+    }
+
+    /** Gets the resource name */
+    async getResourceName(): Promise<string> {
+        const rpcArgs: Record<string, unknown> = { resource: this._handle };
+        return await this._client.invokeCapability<string>(
+            'Aspire.Hosting/getResourceName',
+            rpcArgs
+        );
+    }
+
+    /** @internal */
+    private async _onBeforeResourceStartedInternal(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as BeforeResourceStartedEventHandle;
+            const arg = new BeforeResourceStartedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/onBeforeResourceStarted',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._onBeforeResourceStartedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceStoppedInternal(callback: (arg: ResourceStoppedEvent) => Promise<void>): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceStoppedEventHandle;
+            const arg = new ResourceStoppedEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/onResourceStopped',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._onResourceStoppedInternal(callback));
+    }
+
+    /** @internal */
+    private async _onConnectionStringAvailableInternal(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ConnectionStringAvailableEventHandle;
+            const arg = new ConnectionStringAvailableEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/onConnectionStringAvailable',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._onConnectionStringAvailableInternal(callback));
+    }
+
+    /** @internal */
+    private async _onInitializeResourceInternal(callback: (arg: InitializeResourceEvent) => Promise<void>): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as InitializeResourceEventHandle;
+            const arg = new InitializeResourceEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/onInitializeResource',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._onInitializeResourceInternal(callback));
+    }
+
+    /** @internal */
+    private async _onResourceReadyInternal(callback: (arg: ResourceReadyEvent) => Promise<void>): Promise<GitHubModelResource> {
+        const callbackId = registerCallback(async (argData: unknown) => {
+            const argHandle = wrapIfHandle(argData) as ResourceReadyEventHandle;
+            const arg = new ResourceReadyEvent(argHandle, this._client);
+            await callback(arg);
+        });
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, callback: callbackId };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting/onResourceReady',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._onResourceReadyInternal(callback));
+    }
+
+    /** @internal */
+    private async _withApiKeyInternal(apiKey: ParameterResource): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, apiKey };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting.GitHub.Models/withApiKey',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Configures the API key for the GitHub Model resource. */
+    withApiKey(apiKey: ParameterResource): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._withApiKeyInternal(apiKey));
+    }
+
+    /** @internal */
+    private async _enableHealthCheckInternal(): Promise<GitHubModelResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        const result = await this._client.invokeCapability<GitHubModelResourceHandle>(
+            'Aspire.Hosting.GitHub.Models/enableHealthCheck',
+            rpcArgs
+        );
+        return new GitHubModelResource(result, this._client);
+    }
+
+    /** Adds a health check for the GitHub Model resource. */
+    enableHealthCheck(): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._enableHealthCheckInternal());
+    }
+
+}
+
+/**
+ * Thenable wrapper for GitHubModelResource that enables fluent chaining.
+ * @example
+ * await builder.addSomething().withX().withY();
+ */
+export class GitHubModelResourcePromise implements PromiseLike<GitHubModelResource> {
+    constructor(private _promise: Promise<GitHubModelResource>) {}
+
+    then<TResult1 = GitHubModelResource, TResult2 = never>(
+        onfulfilled?: ((value: GitHubModelResource) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ): PromiseLike<TResult1 | TResult2> {
+        return this._promise.then(onfulfilled, onrejected);
+    }
+
+    /** Configures a resource to use a container registry */
+    withContainerRegistry(registry: ResourceBuilderBase): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withContainerRegistry(registry)));
+    }
+
+    /** Sets the base image for a Dockerfile build */
+    withDockerfileBaseImage(options?: WithDockerfileBaseImageOptions): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withDockerfileBaseImage(options)));
+    }
+
+    /** Adds a required command dependency */
+    withRequiredCommand(command: string, options?: WithRequiredCommandOptions): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
+    }
+
+    /** Adds a connection property with a string or reference expression value */
+    withConnectionProperty(name: string, value: string | ReferenceExpression): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withConnectionProperty(name, value)));
+    }
+
+    /** Adds a connection property with a string value */
+    withConnectionPropertyValue(name: string, value: string): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withConnectionPropertyValue(name, value)));
+    }
+
+    /** Gets a connection property by key */
+    getConnectionProperty(key: string): Promise<ReferenceExpression> {
+        return this._promise.then(obj => obj.getConnectionProperty(key));
+    }
+
+    /** Customizes displayed URLs via callback */
+    withUrlsCallback(callback: (obj: ResourceUrlsCallbackContext) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withUrlsCallback(callback)));
+    }
+
+    /** Customizes displayed URLs via async callback */
+    withUrlsCallbackAsync(callback: (arg: ResourceUrlsCallbackContext) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withUrlsCallbackAsync(callback)));
+    }
+
+    /** Adds or modifies displayed URLs */
+    withUrl(url: string, options?: WithUrlOptions): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withUrl(url, options)));
+    }
+
+    /** Adds a URL using a reference expression */
+    withUrlExpression(url: ReferenceExpression, options?: WithUrlExpressionOptions): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withUrlExpression(url, options)));
+    }
+
+    /** Customizes the URL for a specific endpoint via callback */
+    withUrlForEndpoint(endpointName: string, callback: (obj: ResourceUrlAnnotation) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withUrlForEndpoint(endpointName, callback)));
+    }
+
+    /** Excludes the resource from the deployment manifest */
+    excludeFromManifest(): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.excludeFromManifest()));
+    }
+
+    /** Prevents resource from starting automatically */
+    withExplicitStart(): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withExplicitStart()));
+    }
+
+    /** Adds a health check by key */
+    withHealthCheck(key: string): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withHealthCheck(key)));
+    }
+
+    /** Adds a resource command */
+    withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withCommand(name, displayName, executeCommand, options)));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
+    }
+
+    /** Sets the parent relationship */
+    withParentRelationship(parent: ResourceBuilderBase): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withParentRelationship(parent)));
+    }
+
+    /** Sets a child relationship */
+    withChildRelationship(child: ResourceBuilderBase): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withChildRelationship(child)));
+    }
+
+    /** Sets the icon for the resource */
+    withIconName(iconName: string, options?: WithIconNameOptions): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withIconName(iconName, options)));
+    }
+
+    /** Excludes the resource from MCP server exposure */
+    excludeFromMcp(): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.excludeFromMcp()));
+    }
+
+    /** Adds a pipeline step to the resource */
+    withPipelineStepFactory(stepName: string, callback: (arg: PipelineStepContext) => Promise<void>, options?: WithPipelineStepFactoryOptions): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withPipelineStepFactory(stepName, callback, options)));
+    }
+
+    /** Configures pipeline step dependencies via an async callback */
+    withPipelineConfigurationAsync(callback: (arg: PipelineConfigurationContext) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withPipelineConfigurationAsync(callback)));
+    }
+
+    /** Configures pipeline step dependencies via a callback */
+    withPipelineConfiguration(callback: (obj: PipelineConfigurationContext) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withPipelineConfiguration(callback)));
+    }
+
+    /** Gets the resource name */
+    getResourceName(): Promise<string> {
+        return this._promise.then(obj => obj.getResourceName());
+    }
+
+    /** Subscribes to the BeforeResourceStarted event */
+    onBeforeResourceStarted(callback: (arg: BeforeResourceStartedEvent) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.onBeforeResourceStarted(callback)));
+    }
+
+    /** Subscribes to the ResourceStopped event */
+    onResourceStopped(callback: (arg: ResourceStoppedEvent) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.onResourceStopped(callback)));
+    }
+
+    /** Subscribes to the ConnectionStringAvailable event */
+    onConnectionStringAvailable(callback: (arg: ConnectionStringAvailableEvent) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.onConnectionStringAvailable(callback)));
+    }
+
+    /** Subscribes to the InitializeResource event */
+    onInitializeResource(callback: (arg: InitializeResourceEvent) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.onInitializeResource(callback)));
+    }
+
+    /** Subscribes to the ResourceReady event */
+    onResourceReady(callback: (arg: ResourceReadyEvent) => Promise<void>): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.onResourceReady(callback)));
+    }
+
+    /** Configures the API key for the GitHub Model resource. */
+    withApiKey(apiKey: ParameterResource): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.withApiKey(apiKey)));
+    }
+
+    /** Adds a health check for the GitHub Model resource. */
+    enableHealthCheck(): GitHubModelResourcePromise {
+        return new GitHubModelResourcePromise(this._promise.then(obj => obj.enableHealthCheck()));
     }
 
 }
@@ -35082,6 +35901,7 @@ registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.CSharpAppR
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.DotnetToolResource', (handle, client) => new DotnetToolResource(handle as DotnetToolResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ExecutableResource', (handle, client) => new ExecutableResource(handle as ExecutableResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ExternalServiceResource', (handle, client) => new ExternalServiceResource(handle as ExternalServiceResourceHandle, client));
+registerHandleWrapper('Aspire.Hosting.GitHub.Models/Aspire.Hosting.GitHub.Models.GitHubModelResource', (handle, client) => new GitHubModelResource(handle as GitHubModelResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.JavaScriptAppResource', (handle, client) => new JavaScriptAppResource(handle as JavaScriptAppResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.NodeAppResource', (handle, client) => new NodeAppResource(handle as NodeAppResourceHandle, client));
 registerHandleWrapper('Aspire.Hosting/Aspire.Hosting.ApplicationModel.ParameterResource', (handle, client) => new ParameterResource(handle as ParameterResourceHandle, client));

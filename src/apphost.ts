@@ -1,8 +1,16 @@
-import { createBuilder } from './.modules/aspire.js';
+import { createBuilder, GitHubModelName } from './.modules/aspire.js';
 
 const builder = await createBuilder();
 
+// Parameters
+var apiKey = await builder
+    .addParameter("github-api-key", { secret: true });
+
 // Infrastructure
+var ai = await builder
+    .addGitHubModel("ai", GitHubModelName.OpenAIGpt4oMini)
+    .withApiKey(apiKey);
+
 const cache = await builder
     .addRedis("cache");
 
@@ -12,6 +20,13 @@ const weather = await builder
     .withUv()
     .withReference(cache)
     .waitFor(cache)
+    .withHttpsEndpoint();
+
+const weatherAiOutfit = await builder
+    .addUvicornApp("weather-ai-outfit", "./services/weather-ai-outfit", "main:app")
+    .withUv()
+    .withReference(ai)
+    .waitFor(ai)
     .withHttpsEndpoint();
 
 // Frontend
@@ -26,6 +41,9 @@ var gateway = await builder
         // Services
         yarp.addRouteFromResource("/weather/api/{**catch-all}", weather)
             .withTransformPathRemovePrefix("/weather");
+
+        yarp.addRouteFromResource("/weather-ai-outfit/api/{**catch-all}", weatherAiOutfit)
+            .withTransformPathRemovePrefix("/weather-ai-outfit");
 
         // Frontend
         const context = await builder.executionContext.get();
