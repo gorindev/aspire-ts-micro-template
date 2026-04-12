@@ -4,7 +4,7 @@
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.2.1"
+    "version": "13.2.2"
   },
   "profiles": {
     "https": {
@@ -24,10 +24,10 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.JavaScript": "13.2.1",
-    "Aspire.Hosting.Python": "13.2.1",
-    "Aspire.Hosting.Redis": "13.2.1",
-    "Aspire.Hosting.Yarp": "13.2.1",
-    "Aspire.Hosting.GitHub.Models": "13.2.1"
+    "Aspire.Hosting.JavaScript": "13.2.2",
+    "Aspire.Hosting.Python": "13.2.2",
+    "Aspire.Hosting.Redis": "13.2.2",
+    "Aspire.Hosting.Yarp": "13.2.2",
+    "Aspire.Hosting.GitHub.Models": "13.2.2"
   }
 }
